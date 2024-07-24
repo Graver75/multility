@@ -1,0 +1,5 @@
+python-telegram-bot
+mysql-connector-python
+requests
+python-dotenv
+aio-pika

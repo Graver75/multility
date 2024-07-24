@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: docker/bot/Dockerfile
+    ports:
+      - "81:80"
+    networks:
+      bonusmoney_network:
+        ipv4_address: 192.168.0.19
+
+networks:
+  bonusmoney_network:
+    external: true
