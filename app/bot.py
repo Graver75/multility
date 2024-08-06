@@ -39,9 +39,10 @@ logging.basicConfig(
 
 TOKEN = os.getenv('BOT_TOKEN')
 
-# Enable logging
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    filename='bot.log',
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
 )
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
@@ -51,37 +52,40 @@ db = DB(MYSQL_LOGIN, MYSQL_PASSWORD, MYSQL_HOST, 'multility')
 engine = db.get_engine()
 session = db.get_session()
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     user = update.message.from_user
     chat_id = user.id
     name = user.username or user.first_name or 'Anonymous'
 
     existing_user = session.query(models.User).filter_by(chat_id=chat_id).first()
 
-    if existing_user:
-        await update.message.reply_text('Ты уже зарегистрирован')
-        return ConversationHandler.END
-    else:
+    if not existing_user:
         user = models.User(name=name, chat_id=chat_id)
         session.add(user)
         session.commit()
+        logging.info(f'New user {name} {chat_id} added to the database')
         await update.message.reply_text('Вроде записал тебя, хз')
 
+    return await choose_module(update, context)
+
 async def choose_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-    user = update.message.from_user
     modules = helper.getModules()
 
     reply_keyboard = [
         [KeyboardButton(module)] for module in modules
     ]
     await update.message.reply_text(
-        "Choose a module",
+        "Выбери модуль:",
         reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard, one_time_keyboard=True, input_field_placeholder="Choose a module"
+            reply_keyboard, one_time_keyboard=True, input_field_placeholder="Модуль"
         ),
     )
 
-    return ConversationHandler.END
+    return 'module_chosen'
+
+async def to_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
+    chosen_module = update.message.text
+    await update.message.reply_text(f'Ты выбрал {chosen_module}')
 
 async def send_error_message(message):
     await message.ack()
@@ -95,14 +99,15 @@ async def send_error_message(message):
         for chat_id in message['to_tg']:
             await bot.send_message(chat_id, message['message'])
 
-def main() -> None:
 
+def main() -> None:
     models.create_tables()
 
     application = Application.builder().token(TOKEN).build()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
+            'module_chosen': [MessageHandler(filters.TEXT & ~filters.COMMAND, to_module)],
         },
         fallbacks=[],
     )
