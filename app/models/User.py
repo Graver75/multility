@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer, String, Text
 
-from . import Base
+from app.db import Base
 
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = {'extend_existing': True}  # Добавьте эту строку
 
     id = Column(Integer, primary_key=True)
     chat_id = Column(Integer)

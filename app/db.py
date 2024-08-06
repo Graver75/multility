@@ -2,6 +2,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+MYSQL_LOGIN = os.getenv('MYSQL_USER')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+MYSQL_HOST = os.getenv('MYSQL_HOST')
 
 class SingletonMeta(type):
     _instances = {}
@@ -28,3 +37,7 @@ class DB(metaclass=SingletonMeta):
 
     def create_tables(self):
         self.Base.metadata.create_all(self.engine)
+
+
+db = DB(MYSQL_LOGIN, MYSQL_PASSWORD, MYSQL_HOST, 'multility')
+Base = db.Base

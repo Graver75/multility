@@ -16,8 +16,9 @@ from dotenv import load_dotenv
 
 import helper
 
-from db import DB
-import models
+import db
+
+from app.models import User
 
 from rabbitmq import RabbitMQClient
 
@@ -48,9 +49,9 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-db = DB(MYSQL_LOGIN, MYSQL_PASSWORD, MYSQL_HOST, 'multility')
-engine = db.get_engine()
-session = db.get_session()
+
+Base = db.db.Base
+session = db.db.get_session()
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -58,10 +59,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat_id = user.id
     name = user.username or user.first_name or 'Anonymous'
 
-    existing_user = session.query(models.User).filter_by(chat_id=chat_id).first()
+    existing_user = session.query(User).filter_by(chat_id=chat_id).first()
 
     if not existing_user:
-        user = models.User(name=name, chat_id=chat_id)
+        user = User(name=name, chat_id=chat_id)
         session.add(user)
         session.commit()
         logging.info(f'New user {name} {chat_id} added to the database')
@@ -79,7 +80,7 @@ async def choose_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> s
     await update.message.reply_text(
         "Выбери модуль:",
         reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard, one_time_keyboard=True, input_field_placeholder="Модуль"
+            reply_keyboard, one_time_keyboard=True, input_field_placeholder="Модуль", resize_keyboard=True
         ),
     )
 
@@ -106,7 +107,7 @@ async def send_error_message(message):
 
 
 def main() -> None:
-    models.create_tables()
+    db.db.create_tables()
 
     application = Application.builder().token(TOKEN).build()
     conv_handler = ConversationHandler(
