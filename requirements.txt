@@ -3,3 +3,5 @@ mysql-connector-python
 requests
 python-dotenv
 aio-pika
+sqlalchemy
+pymysql

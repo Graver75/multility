@@ -16,13 +16,21 @@ from dotenv import load_dotenv
 
 import helper
 
+from db import DB
+import models
+
 from rabbitmq import RabbitMQClient
+
 
 load_dotenv()
 
 RABBITMQ_LOGIN = os.getenv('RABBITMQ_LOGIN')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD')
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')
+
+MYSQL_LOGIN = os.getenv('MYSQL_USER')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+MYSQL_HOST = os.getenv('MYSQL_HOST')
 
 
 logging.basicConfig(
@@ -74,6 +82,10 @@ async def send_error_message(message):
             await bot.send_message(chat_id, message['message'])
 
 def main() -> None:
+    db = DB(MYSQL_LOGIN, MYSQL_PASSWORD, MYSQL_HOST, 'multility')
+
+    models.create_tables()
+
     application = Application.builder().token(TOKEN).build()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
@@ -82,10 +94,10 @@ def main() -> None:
         fallbacks=[],
     )
 
-    rabbitmq = RabbitMQClient(RABBITMQ_LOGIN, RABBITMQ_PASSWORD, RABBITMQ_HOST, [
-        ('errors', send_error_message)
-    ])
-    asyncio.get_event_loop().create_task(rabbitmq.listen())
+    # rabbitmq = RabbitMQClient(RABBITMQ_LOGIN, RABBITMQ_PASSWORD, RABBITMQ_HOST, [
+    #     ('errors', send_error_message)
+    # ])
+    # asyncio.get_event_loop().create_task(rabbitmq.listen())
 
     application.add_handler(conv_handler)
 
