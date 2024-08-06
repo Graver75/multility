@@ -117,6 +117,11 @@ def main() -> None:
         fallbacks=[],
     )
 
+    modules = helper.get_modules()
+    for module in modules:
+        module_states = helper.get_module_states(module)
+        conv_handler.states.update(module_states)
+
     # rabbitmq = RabbitMQClient(RABBITMQ_LOGIN, RABBITMQ_PASSWORD, RABBITMQ_HOST, [
     #     ('errors', send_error_message)
     # ])

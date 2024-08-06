@@ -10,11 +10,9 @@ def get_modules():
 
 
 def get_module_states(module):
-    states = []
-    for moduleDir in os.listdir("modules/" + module):
-        if os.path.isdir(os.path.join("modules/" + module, moduleDir)):
-            states.append(moduleDir)
-    return states
+    states_path = f"modules.{module}.states"
+    states = importlib.import_module(states_path)
+    return states.states
 
 
 def get_module_start(module):
