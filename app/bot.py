@@ -52,6 +52,7 @@ db = DB(MYSQL_LOGIN, MYSQL_PASSWORD, MYSQL_HOST, 'multility')
 engine = db.get_engine()
 session = db.get_session()
 
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     user = update.message.from_user
     chat_id = user.id
@@ -68,8 +69,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     return await choose_module(update, context)
 
+
 async def choose_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-    modules = helper.getModules()
+    modules = helper.get_modules()
 
     reply_keyboard = [
         [KeyboardButton(module)] for module in modules
@@ -83,9 +85,12 @@ async def choose_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> s
 
     return 'module_chosen'
 
+
 async def to_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chosen_module = update.message.text
-    await update.message.reply_text(f'Ты выбрал {chosen_module}')
+    module_start = helper.get_module_start(chosen_module)
+    return await module_start(update, context)
+
 
 async def send_error_message(message):
     await message.ack()
