@@ -47,11 +47,20 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-GENDER, PHOTO, LOCATION, BIO = range(4)
-
+db = DB(MYSQL_LOGIN, MYSQL_PASSWORD, MYSQL_HOST, 'multility')
+engine = db.get_engine()
+session = db.get_session()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text('Сюда будут сыпаться ошибки')
+    user = update.message.from_user
+    chat_id = user.id
+    name = user.username or user.first_name or 'Anonymous'
+
+    user = models.User(name=name, chat_id=chat_id)
+    session.add(user)
+    session.commit()
+
+    await update.message.reply_text('Вроде записал тебя, хз')
 
 async def choose_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     user = update.message.from_user
@@ -82,7 +91,6 @@ async def send_error_message(message):
             await bot.send_message(chat_id, message['message'])
 
 def main() -> None:
-    db = DB(MYSQL_LOGIN, MYSQL_PASSWORD, MYSQL_HOST, 'multility')
 
     models.create_tables()
 

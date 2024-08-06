@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 
-
 from app.db import DB
 
 load_dotenv()
@@ -14,7 +13,7 @@ MYSQL_HOST = os.getenv('MYSQL_HOST')
 db = DB(MYSQL_LOGIN, MYSQL_PASSWORD, MYSQL_HOST, 'multility')
 Base = db.Base
 
-from . import User
+from .User import User
 
 def create_tables():
     db.create_tables()
