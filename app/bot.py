@@ -56,11 +56,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = user.id
     name = user.username or user.first_name or 'Anonymous'
 
-    user = models.User(name=name, chat_id=chat_id)
-    session.add(user)
-    session.commit()
+    existing_user = session.query(models.User).filter_by(chat_id=chat_id).first()
 
-    await update.message.reply_text('Вроде записал тебя, хз')
+    if existing_user:
+        await update.message.reply_text('Ты уже зарегистрирован')
+        return ConversationHandler.END
+    else:
+        user = models.User(name=name, chat_id=chat_id)
+        session.add(user)
+        session.commit()
+        await update.message.reply_text('Вроде записал тебя, хз')
 
 async def choose_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     user = update.message.from_user
