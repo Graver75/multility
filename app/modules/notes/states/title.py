@@ -4,12 +4,12 @@ from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 from ..names import *
 
-from app.models.Note import Note
-from app.models.User import User
+from  models.Note import Note
+from  models.User import User
 
-from app.db import db
+from  db import db
 
-from app.bot import start
+from  bot import start
 
 
 async def send(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:

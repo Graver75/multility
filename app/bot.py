@@ -18,7 +18,7 @@ import helper
 
 import db
 
-from app.models import User
+from models import User
 
 from rabbitmq import RabbitMQClient
 
