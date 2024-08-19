@@ -110,12 +110,14 @@ def main() -> None:
     db.db.create_tables()
 
     application = Application.builder().token(TOKEN).build()
+
+    start_handler = CommandHandler('start', start)
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
+        entry_points=[start_handler],
         states={
             'module_chosen': [MessageHandler(filters.TEXT & ~filters.COMMAND, to_module)],
         },
-        fallbacks=[],
+        fallbacks=[start_handler],
     )
 
     modules = helper.get_modules()
